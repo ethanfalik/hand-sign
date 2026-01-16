@@ -33,7 +33,7 @@ def main():
         print("Old model deleted. Training from scratch.")
 
     classifier = HandSignClassifier(model_path=model_path, retrain=True)
-    classifier.train(X, y, epochs=50)
+    classifier.train(X, y, epochs=EPOCHS)
 
     print("New model trained and saved as asl_model.h5")
 
