@@ -115,11 +115,27 @@ def record_sequence(letter_list):
             if user_quit:
                 break
 
+            # --- UPDATED: APPEND LOGIC ---
             if collected:
                 file_path = os.path.join(DATA_DIR, f"{letter}.json")
+                
+            # --- UPDATED: APPEND LOGIC ---
+            if collected:
+                file_path = os.path.join(DATA_DIR, f"{letter}.json")
+                
+                # Check if we already have data for this letter
+                if os.path.exists(file_path):
+                    with open(file_path, "r") as f:
+                        try:
+                            existing_data = json.load(f)
+                            # Combine old data with new data
+                            collected = existing_data + collected
+                        except json.JSONDecodeError:
+                            print(f"Error reading {file_path}, starting fresh.")
+
                 with open(file_path, "w") as f:
                     json.dump(collected, f)
-                print(f"Saved {len(collected)} samples for '{letter}'")
+                print(f"Total samples now saved for '{letter}': {len(collected)}")
             else:
                 print("No data saved.")
 
