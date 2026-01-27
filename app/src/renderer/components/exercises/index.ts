@@ -1,0 +1,5 @@
+export { SignAllExercise } from './SignAllExercise'
+export { SpellItExercise } from './SpellItExercise'
+export { QuickFireExercise } from './QuickFireExercise'
+export { FillGapExercise } from './FillGapExercise'
+export { MemoryChainExercise } from './MemoryChainExercise'

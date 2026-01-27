@@ -1,0 +1,43 @@
+{
+  "name": "signlingo",
+  "version": "0.1.0",
+  "description": "Learn sign language like Duolingo",
+  "main": "dist/main/index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:renderer\" \"npm run dev:main\"",
+    "dev:renderer": "vite",
+    "dev:main": "wait-on http://localhost:5173 && tsc -p tsconfig.main.json && cross-env NODE_ENV=development electron .",
+    "build": "tsc -p tsconfig.main.json && vite build",
+    "start": "electron .",
+    "preview": "vite preview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@mediapipe/camera_utils": "^0.3.1675466862",
+    "@mediapipe/drawing_utils": "^0.3.1675466124",
+    "@mediapipe/hands": "^0.4.1675469240",
+    "@tensorflow/tfjs": "^4.22.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "umap-js": "^1.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.10",
+    "@types/react": "^19.2.9",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.2",
+    "autoprefixer": "^10.4.23",
+    "concurrently": "^8.2.2",
+    "cross-env": "^10.1.0",
+    "electron": "^40.0.0",
+    "electron-builder": "^26.4.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.19",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "wait-on": "^9.0.3"
+  }
+}

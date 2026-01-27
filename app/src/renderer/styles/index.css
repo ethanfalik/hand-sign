@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-gray-950 text-gray-100 font-sans;
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Celebration animation */
+@keyframes scale-in {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.4s ease-out forwards;
+}
+
+/* Bounce animation for lesson nodes */
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 2s ease-in-out infinite;
+}
+
+/* Interactive button styles */
+.btn-float {
+  @apply transition-all duration-150;
+  transform: translateY(0);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
+}
+
+.btn-float:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.3);
+}
+
+.btn-float:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* Lesson node button */
+.lesson-node {
+  @apply transition-all duration-150;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.4);
+}
+
+.lesson-node:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 7px 0 rgba(0, 0, 0, 0.4);
+}
+
+.lesson-node:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Glow ring for skip test nodes */
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.3), 0 4px 0 rgba(0, 0, 0, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(168, 85, 247, 0.15), 0 4px 0 rgba(0, 0, 0, 0.4);
+  }
+}
+
+.glow-ring {
+  animation: glow-pulse 2s ease-in-out infinite;
+}

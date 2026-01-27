@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Build output
+app/dist/
+app/dist-electron/
+
+# Environment
+.env
+.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
