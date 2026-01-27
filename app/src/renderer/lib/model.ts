@@ -295,32 +295,115 @@ export async function trainModel(
   }
 }
 
-// Save model to localStorage
+// Save model to filesystem via Electron IPC
 export async function saveModel(model: tf.LayersModel): Promise<void> {
-  await model.save('localstorage://signlingo-model')
+  // Get model topology
+  const modelTopology = model.toJSON(null, false)
+
+  // Get weights data
+  const weightData = await model.getWeights()
+  const weightSpecs: tf.io.WeightsManifestEntry[] = []
+  const weightArrays: ArrayBuffer[] = []
+
+  for (let i = 0; i < weightData.length; i++) {
+    const weight = weightData[i]
+    const data = await weight.data()
+    const buffer = new Float32Array(data).buffer
+    weightArrays.push(buffer)
+    weightSpecs.push({
+      name: `weight_${i}`,
+      shape: weight.shape,
+      dtype: weight.dtype as 'float32',
+    })
+  }
+
+  // Combine all weight buffers
+  const totalBytes = weightArrays.reduce((sum, arr) => sum + arr.byteLength, 0)
+  const combinedBuffer = new ArrayBuffer(totalBytes)
+  const combinedView = new Uint8Array(combinedBuffer)
+  let offset = 0
+  for (const arr of weightArrays) {
+    combinedView.set(new Uint8Array(arr), offset)
+    offset += arr.byteLength
+  }
+
+  // Create model.json structure
+  const modelJson = JSON.stringify({
+    modelTopology,
+    weightsManifest: [{
+      paths: ['weights.bin'],
+      weights: weightSpecs,
+    }],
+  })
+
+  // Save metadata
+  const metadata = JSON.stringify({
+    trainedLetters: getTrainedLetters(),
+    dynamicLetters: [...getDynamicLetters()],
+  })
+
+  await window.electronAPI.saveModel(modelJson, combinedBuffer, metadata)
 }
 
-// Load model from localStorage
+// Load model from filesystem via Electron IPC
 export async function loadModel(): Promise<tf.LayersModel | null> {
   try {
-    const model = await tf.loadLayersModel('localstorage://signlingo-model')
+    const data = await window.electronAPI.loadModel()
+    if (!data) return null
+
+    const { modelJson, weightsData, metadata } = data
+    const modelArtifacts = JSON.parse(modelJson)
+
+    // Parse metadata and restore state
+    const meta = JSON.parse(metadata)
+    if (meta.trainedLetters) {
+      setTrainedLetters(meta.trainedLetters)
+    }
+    if (meta.dynamicLetters) {
+      setDynamicLetters(new Set(meta.dynamicLetters))
+    }
+
+    // Create weight tensors from binary data
+    const weightsManifest = modelArtifacts.weightsManifest[0].weights
+    const weightData = new Float32Array(weightsData)
+
+    let weightOffset = 0
+    const weightMap: { [name: string]: tf.Tensor } = {}
+
+    for (const spec of weightsManifest) {
+      const size = spec.shape.reduce((a: number, b: number) => a * b, 1)
+      const values = weightData.slice(weightOffset, weightOffset + size)
+      weightMap[spec.name] = tf.tensor(Array.from(values), spec.shape, spec.dtype)
+      weightOffset += size
+    }
+
+    // Load model with weights
+    const model = await tf.loadLayersModel({
+      load: async () => ({
+        modelTopology: modelArtifacts.modelTopology,
+        weightSpecs: weightsManifest,
+        weightData: weightsData,
+      }),
+    })
+
     return model
-  } catch {
+  } catch (err) {
+    console.error('Failed to load model:', err)
     return null
   }
 }
 
 // Check if a saved model exists
-export function hasStoredModel(): boolean {
-  return localStorage.getItem('tensorflowjs_models/signlingo-model/info') !== null
+export async function hasStoredModel(): Promise<boolean> {
+  return window.electronAPI.hasModel()
 }
 
 // Delete stored model
-export function deleteStoredModel(): void {
-  const keys = Object.keys(localStorage).filter(k => k.startsWith('tensorflowjs_models/signlingo-model'))
-  keys.forEach(k => localStorage.removeItem(k))
-  // Also clear trained letters mapping
+export async function deleteStoredModel(): Promise<void> {
+  await window.electronAPI.deleteModel()
+  // Also clear localStorage state
   localStorage.removeItem('signlingo-trained-letters')
+  localStorage.removeItem('signlingo-dynamic-letters')
 }
 
 // Predict letter from landmarks with top N results

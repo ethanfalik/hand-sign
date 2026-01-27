@@ -1,0 +1,5 @@
+# This directory contains the trained TensorFlow.js model
+# Files:
+#   model.json    - Model topology and weights manifest
+#   weights.bin   - Binary weights data
+#   metadata.json - Trained letters mapping
