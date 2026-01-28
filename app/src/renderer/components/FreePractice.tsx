@@ -115,25 +115,6 @@ export function FreePractice({ model, onBack }: Props) {
     setDebugInfo('')
   }, [selectedLetter])
 
-  // Get hint landmarks for the selected letter
-  const getHintLandmarks = useCallback((): number[][] | null => {
-    if (!selectedLetter) return null
-
-    if (isDynamic) {
-      // For dynamic, show the starting position landmarks
-      const samples = dynamicSamplesRef.current.filter(s => s.letter === selectedLetter)
-      if (samples.length > 0 && samples[0].frames.length > 0) {
-        return samples[0].frames[0] // First frame of first sample
-      }
-    } else {
-      // For static, show average of first few samples
-      const samples = staticSamplesRef.current.filter(s => s.letter === selectedLetter)
-      if (samples.length > 0) {
-        return samples[0].landmarks
-      }
-    }
-    return null
-  }, [selectedLetter, isDynamic])
 
   const handleLandmarks = useCallback(async (data: HandLandmarks) => {
     if (!selectedLetter) return
@@ -270,8 +251,6 @@ export function FreePractice({ model, onBack }: Props) {
     }
   }, [isDynamic])
 
-  const hintLandmarks = showHint ? getHintLandmarks() : null
-
   // Get sample counts for display
   const getSampleCount = useCallback((letter: string) => {
     if (dynamicLettersRef.current.has(letter)) {
@@ -313,106 +292,14 @@ export function FreePractice({ model, onBack }: Props) {
               onHandLost={handleHandLost}
             />
 
-            {/* Hint overlay - improved visualization */}
-            {showHint && hintLandmarks && (
-              <svg
-                className="absolute inset-0 w-full h-full pointer-events-none"
-                viewBox="0 0 1 1"
-                preserveAspectRatio="none"
-              >
-                {/* Semi-transparent hand fill */}
-                <path
-                  d={`M ${1 - hintLandmarks[0][0]} ${hintLandmarks[0][1]}
-                      L ${1 - hintLandmarks[1][0]} ${hintLandmarks[1][1]}
-                      L ${1 - hintLandmarks[2][0]} ${hintLandmarks[2][1]}
-                      L ${1 - hintLandmarks[3][0]} ${hintLandmarks[3][1]}
-                      L ${1 - hintLandmarks[4][0]} ${hintLandmarks[4][1]}
-                      L ${1 - hintLandmarks[3][0]} ${hintLandmarks[3][1]}
-                      L ${1 - hintLandmarks[2][0]} ${hintLandmarks[2][1]}
-                      L ${1 - hintLandmarks[5][0]} ${hintLandmarks[5][1]}
-                      L ${1 - hintLandmarks[6][0]} ${hintLandmarks[6][1]}
-                      L ${1 - hintLandmarks[7][0]} ${hintLandmarks[7][1]}
-                      L ${1 - hintLandmarks[8][0]} ${hintLandmarks[8][1]}
-                      L ${1 - hintLandmarks[7][0]} ${hintLandmarks[7][1]}
-                      L ${1 - hintLandmarks[6][0]} ${hintLandmarks[6][1]}
-                      L ${1 - hintLandmarks[9][0]} ${hintLandmarks[9][1]}
-                      L ${1 - hintLandmarks[10][0]} ${hintLandmarks[10][1]}
-                      L ${1 - hintLandmarks[11][0]} ${hintLandmarks[11][1]}
-                      L ${1 - hintLandmarks[12][0]} ${hintLandmarks[12][1]}
-                      L ${1 - hintLandmarks[11][0]} ${hintLandmarks[11][1]}
-                      L ${1 - hintLandmarks[10][0]} ${hintLandmarks[10][1]}
-                      L ${1 - hintLandmarks[13][0]} ${hintLandmarks[13][1]}
-                      L ${1 - hintLandmarks[14][0]} ${hintLandmarks[14][1]}
-                      L ${1 - hintLandmarks[15][0]} ${hintLandmarks[15][1]}
-                      L ${1 - hintLandmarks[16][0]} ${hintLandmarks[16][1]}
-                      L ${1 - hintLandmarks[15][0]} ${hintLandmarks[15][1]}
-                      L ${1 - hintLandmarks[14][0]} ${hintLandmarks[14][1]}
-                      L ${1 - hintLandmarks[17][0]} ${hintLandmarks[17][1]}
-                      L ${1 - hintLandmarks[18][0]} ${hintLandmarks[18][1]}
-                      L ${1 - hintLandmarks[19][0]} ${hintLandmarks[19][1]}
-                      L ${1 - hintLandmarks[20][0]} ${hintLandmarks[20][1]}
-                      Z`}
-                  fill="rgba(168, 85, 247, 0.15)"
-                  stroke="none"
-                />
-                {/* Draw thicker, more visible connections */}
-                {[
-                  [0, 1], [1, 2], [2, 3], [3, 4], // Thumb
-                  [0, 5], [5, 6], [6, 7], [7, 8], // Index
-                  [0, 9], [9, 10], [10, 11], [11, 12], // Middle
-                  [0, 13], [13, 14], [14, 15], [15, 16], // Ring
-                  [0, 17], [17, 18], [18, 19], [19, 20], // Pinky
-                  [5, 9], [9, 13], [13, 17], // Palm
-                ].map(([a, b], i) => (
-                  <line
-                    key={i}
-                    x1={1 - hintLandmarks[a][0]}
-                    y1={hintLandmarks[a][1]}
-                    x2={1 - hintLandmarks[b][0]}
-                    y2={hintLandmarks[b][1]}
-                    stroke="rgba(168, 85, 247, 0.8)"
-                    strokeWidth="0.012"
-                    strokeLinecap="round"
-                  />
-                ))}
-                {/* Fingertip highlights with labels */}
-                {[
-                  { idx: 4, label: 'Thumb', color: '#f59e0b' },
-                  { idx: 8, label: 'Index', color: '#10b981' },
-                  { idx: 12, label: 'Middle', color: '#3b82f6' },
-                  { idx: 16, label: 'Ring', color: '#8b5cf6' },
-                  { idx: 20, label: 'Pinky', color: '#ec4899' },
-                ].map(({ idx, label, color }) => (
-                  <g key={idx}>
-                    <circle
-                      cx={1 - hintLandmarks[idx][0]}
-                      cy={hintLandmarks[idx][1]}
-                      r="0.025"
-                      fill={color}
-                      opacity="0.9"
-                    />
-                    <text
-                      x={1 - hintLandmarks[idx][0]}
-                      y={hintLandmarks[idx][1] - 0.04}
-                      fontSize="0.035"
-                      fill="white"
-                      textAnchor="middle"
-                      fontWeight="bold"
-                      style={{ textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}
-                    >
-                      {label}
-                    </text>
-                  </g>
-                ))}
-                {/* Wrist marker */}
-                <circle
-                  cx={1 - hintLandmarks[0][0]}
-                  cy={hintLandmarks[0][1]}
-                  r="0.02"
-                  fill="white"
-                  opacity="0.8"
-                />
-              </svg>
+            {/* Hint badge - show letter prominently on video */}
+            {showHint && selectedLetter && (
+              <div className="absolute top-4 left-4 bg-purple-600/90 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-lg">
+                <div className="text-6xl font-bold text-white text-center">{selectedLetter}</div>
+                <div className="text-sm text-purple-200 text-center mt-1">
+                  {ASL_DESCRIPTIONS[selectedLetter]?.description || 'Form this letter'}
+                </div>
+              </div>
             )}
           </div>
 
