@@ -315,8 +315,8 @@ export function FreePractice({ model, onBack }: Props) {
             {showHint && hintLandmarks && (
               <svg
                 className="absolute inset-0 w-full h-full pointer-events-none"
-                viewBox="0 0 100 100"
-                preserveAspectRatio="none"
+                viewBox="0 0 1280 720"
+                preserveAspectRatio="xMidYMid slice"
               >
                 {/* Draw connections - same style as HandTracker */}
                 {[
@@ -329,21 +329,21 @@ export function FreePractice({ model, onBack }: Props) {
                 ].map(([a, b], i) => (
                   <line
                     key={i}
-                    x1={(1 - hintLandmarks[a][0]) * 100}
-                    y1={hintLandmarks[a][1] * 100}
-                    x2={(1 - hintLandmarks[b][0]) * 100}
-                    y2={hintLandmarks[b][1] * 100}
-                    stroke="rgba(168, 85, 247, 0.5)"
-                    strokeWidth="0.3"
+                    x1={(1 - hintLandmarks[a][0]) * 1280}
+                    y1={hintLandmarks[a][1] * 720}
+                    x2={(1 - hintLandmarks[b][0]) * 1280}
+                    y2={hintLandmarks[b][1] * 720}
+                    stroke="rgba(168, 85, 247, 0.6)"
+                    strokeWidth="2"
                   />
                 ))}
-                {/* Draw landmarks - same size as HandTracker (4px dots) */}
+                {/* Draw landmarks - same size as HandTracker (4px radius dots) */}
                 {hintLandmarks.map((lm, i) => (
                   <circle
                     key={i}
-                    cx={(1 - lm[0]) * 100}
-                    cy={lm[1] * 100}
-                    r="0.6"
+                    cx={(1 - lm[0]) * 1280}
+                    cy={lm[1] * 720}
+                    r="4"
                     fill="#c084fc"
                   />
                 ))}
