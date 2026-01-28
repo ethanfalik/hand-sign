@@ -565,12 +565,7 @@ function TrainPage() {
   const [progress, setProgress] = useState<TrainingProgress | null>(null)
   const [trainingComplete, setTrainingComplete] = useState(false)
   const [finalAccuracy, setFinalAccuracy] = useState<number | null>(null)
-  const [hasModel, setHasModel] = useState(false)
-
-  // Check for stored model on mount
-  useEffect(() => {
-    hasStoredModel().then(setHasModel)
-  }, [])
+  const [hasModel, setHasModel] = useState(() => hasStoredModel())
 
   // Count static samples (excluding dynamic letters)
   const staticLetterCounts = samples.reduce((acc, s) => {

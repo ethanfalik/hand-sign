@@ -295,97 +295,15 @@ export async function trainModel(
   }
 }
 
-// Save model to filesystem via Electron IPC
+// Save model to IndexedDB (TensorFlow.js native support)
 export async function saveModel(model: tf.LayersModel): Promise<void> {
-  // Get model topology
-  const modelTopology = model.toJSON(null, false)
-
-  // Get weights data
-  const weightData = await model.getWeights()
-  const weightSpecs: tf.io.WeightsManifestEntry[] = []
-  const weightArrays: ArrayBuffer[] = []
-
-  for (let i = 0; i < weightData.length; i++) {
-    const weight = weightData[i]
-    const data = await weight.data()
-    const buffer = new Float32Array(data).buffer
-    weightArrays.push(buffer)
-    weightSpecs.push({
-      name: `weight_${i}`,
-      shape: weight.shape,
-      dtype: weight.dtype as 'float32',
-    })
-  }
-
-  // Combine all weight buffers
-  const totalBytes = weightArrays.reduce((sum, arr) => sum + arr.byteLength, 0)
-  const combinedBuffer = new ArrayBuffer(totalBytes)
-  const combinedView = new Uint8Array(combinedBuffer)
-  let offset = 0
-  for (const arr of weightArrays) {
-    combinedView.set(new Uint8Array(arr), offset)
-    offset += arr.byteLength
-  }
-
-  // Create model.json structure
-  const modelJson = JSON.stringify({
-    modelTopology,
-    weightsManifest: [{
-      paths: ['weights.bin'],
-      weights: weightSpecs,
-    }],
-  })
-
-  // Save metadata
-  const metadata = JSON.stringify({
-    trainedLetters: getTrainedLetters(),
-    dynamicLetters: [...getDynamicLetters()],
-  })
-
-  await window.electronAPI.saveModel(modelJson, combinedBuffer, metadata)
+  await model.save('indexeddb://signlingo-model')
 }
 
-// Load model from filesystem via Electron IPC
+// Load model from IndexedDB
 export async function loadModel(): Promise<tf.LayersModel | null> {
   try {
-    const data = await window.electronAPI.loadModel()
-    if (!data) return null
-
-    const { modelJson, weightsData, metadata } = data
-    const modelArtifacts = JSON.parse(modelJson)
-
-    // Parse metadata and restore state
-    const meta = JSON.parse(metadata)
-    if (meta.trainedLetters) {
-      setTrainedLetters(meta.trainedLetters)
-    }
-    if (meta.dynamicLetters) {
-      setDynamicLetters(new Set(meta.dynamicLetters))
-    }
-
-    // Create weight tensors from binary data
-    const weightsManifest = modelArtifacts.weightsManifest[0].weights
-    const weightData = new Float32Array(weightsData)
-
-    let weightOffset = 0
-    const weightMap: { [name: string]: tf.Tensor } = {}
-
-    for (const spec of weightsManifest) {
-      const size = spec.shape.reduce((a: number, b: number) => a * b, 1)
-      const values = weightData.slice(weightOffset, weightOffset + size)
-      weightMap[spec.name] = tf.tensor(Array.from(values), spec.shape, spec.dtype)
-      weightOffset += size
-    }
-
-    // Load model with weights
-    const model = await tf.loadLayersModel({
-      load: async () => ({
-        modelTopology: modelArtifacts.modelTopology,
-        weightSpecs: weightsManifest,
-        weightData: weightsData,
-      }),
-    })
-
+    const model = await tf.loadLayersModel('indexeddb://signlingo-model')
     return model
   } catch (err) {
     console.error('Failed to load model:', err)
@@ -394,16 +312,65 @@ export async function loadModel(): Promise<tf.LayersModel | null> {
 }
 
 // Check if a saved model exists
-export async function hasStoredModel(): Promise<boolean> {
-  return window.electronAPI.hasModel()
+export function hasStoredModel(): boolean {
+  // Check localStorage for the IndexedDB model info
+  return localStorage.getItem('tensorflowjs_models/signlingo-model/info') !== null
 }
 
 // Delete stored model
 export async function deleteStoredModel(): Promise<void> {
-  await window.electronAPI.deleteModel()
+  try {
+    await tf.io.removeModel('indexeddb://signlingo-model')
+  } catch {
+    // Model might not exist
+  }
   // Also clear localStorage state
   localStorage.removeItem('signlingo-trained-letters')
   localStorage.removeItem('signlingo-dynamic-letters')
+}
+
+// Export model to downloadable files (for checking into git)
+export async function exportModel(model: tf.LayersModel): Promise<void> {
+  // Save to downloads - this triggers a file download
+  await model.save('downloads://signlingo-model')
+
+  // Also save metadata
+  const metadata = {
+    trainedLetters: getTrainedLetters(),
+    dynamicLetters: [...getDynamicLetters()],
+    exportedAt: new Date().toISOString(),
+  }
+
+  const blob = new Blob([JSON.stringify(metadata, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'signlingo-metadata.json'
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+// Import model from files
+export async function importModel(modelJsonFile: File, weightsFile: File, metadataFile?: File): Promise<tf.LayersModel> {
+  // Load metadata if provided
+  if (metadataFile) {
+    const metaText = await metadataFile.text()
+    const meta = JSON.parse(metaText)
+    if (meta.trainedLetters) {
+      setTrainedLetters(meta.trainedLetters)
+    }
+    if (meta.dynamicLetters) {
+      setDynamicLetters(new Set(meta.dynamicLetters))
+    }
+  }
+
+  // Load model from files
+  const model = await tf.loadLayersModel(tf.io.browserFiles([modelJsonFile, weightsFile]))
+
+  // Save to IndexedDB for future use
+  await saveModel(model)
+
+  return model
 }
 
 // Predict letter from landmarks with top N results
