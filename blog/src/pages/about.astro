@@ -1,0 +1,46 @@
+---
+import Layout from '../layouts/BlogPost.astro';
+---
+
+<Layout
+	title="About SignLingo"
+	description="Learn ASL fingerspelling with real-time feedback"
+	pubDate={new Date('January 28 2025')}
+>
+	<p>
+		SignLingo is an open-source desktop application that teaches American Sign Language (ASL)
+		fingerspelling through interactive, gamified lessons. Think Duolingo, but for hand signs.
+	</p>
+
+	<h2>How It Works</h2>
+	<p>
+		Using your webcam, SignLingo detects your hand position in real-time using MediaPipe's
+		hand landmark detection. A lightweight TensorFlow.js model (just ~115KB) runs entirely
+		in your browser to recognize which letter you're signing.
+	</p>
+
+	<p>
+		The app guides you through progressive lessons, starting with simple letters and building
+		up to full words and phrases. You get instant feedback on your signing accuracy.
+	</p>
+
+	<h2>Privacy First</h2>
+	<p>
+		All processing happens locally on your device. Your webcam feed never leaves your computer.
+		No accounts, no cloud, no tracking.
+	</p>
+
+	<h2>Open Source</h2>
+	<p>
+		SignLingo is fully open source. Check out the code on
+		<a href="https://github.com/ethanfalik/hand-sign">GitHub</a>.
+	</p>
+
+	<h2>Tech Stack</h2>
+	<ul>
+		<li>Electron + React + TypeScript</li>
+		<li>MediaPipe Hands for landmark detection</li>
+		<li>TensorFlow.js for in-browser ML</li>
+		<li>Vite for development</li>
+	</ul>
+</Layout>

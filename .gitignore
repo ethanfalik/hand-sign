@@ -4,6 +4,8 @@ node_modules/
 # Build output
 app/dist/
 app/dist-electron/
+blog/dist/
+blog/.astro/
 
 # Environment
 .env
