@@ -267,6 +267,25 @@ export function FreePractice({ model, onBack }: Props) {
     return letterCounts[letter] || 0
   }, [letterCounts])
 
+  // Get hint landmarks for the selected letter
+  const getHintLandmarks = useCallback((): number[][] | null => {
+    if (!selectedLetter) return null
+    if (isDynamic) {
+      const samples = dynamicSamplesRef.current.filter(s => s.letter === selectedLetter)
+      if (samples.length > 0 && samples[0].frames.length > 0) {
+        return samples[0].frames[0]
+      }
+    } else {
+      const samples = staticSamplesRef.current.filter(s => s.letter === selectedLetter)
+      if (samples.length > 0) {
+        return samples[0].landmarks
+      }
+    }
+    return null
+  }, [selectedLetter, isDynamic])
+
+  const hintLandmarks = showHint ? getHintLandmarks() : null
+
   return (
     <div>
       {/* Header */}
@@ -292,14 +311,43 @@ export function FreePractice({ model, onBack }: Props) {
               onHandLost={handleHandLost}
             />
 
-            {/* Hint badge - show letter prominently on video */}
-            {showHint && selectedLetter && (
-              <div className="absolute top-4 left-4 bg-purple-600/90 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-lg">
-                <div className="text-6xl font-bold text-white text-center">{selectedLetter}</div>
-                <div className="text-sm text-purple-200 text-center mt-1">
-                  {ASL_DESCRIPTIONS[selectedLetter]?.description || 'Form this letter'}
-                </div>
-              </div>
+            {/* Hint overlay - matches HandTracker landmark style */}
+            {showHint && hintLandmarks && (
+              <svg
+                className="absolute inset-0 w-full h-full pointer-events-none"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+              >
+                {/* Draw connections - same style as HandTracker */}
+                {[
+                  [0, 1], [1, 2], [2, 3], [3, 4], // Thumb
+                  [0, 5], [5, 6], [6, 7], [7, 8], // Index
+                  [0, 9], [9, 10], [10, 11], [11, 12], // Middle
+                  [0, 13], [13, 14], [14, 15], [15, 16], // Ring
+                  [0, 17], [17, 18], [18, 19], [19, 20], // Pinky
+                  [5, 9], [9, 13], [13, 17], // Palm
+                ].map(([a, b], i) => (
+                  <line
+                    key={i}
+                    x1={(1 - hintLandmarks[a][0]) * 100}
+                    y1={hintLandmarks[a][1] * 100}
+                    x2={(1 - hintLandmarks[b][0]) * 100}
+                    y2={hintLandmarks[b][1] * 100}
+                    stroke="rgba(168, 85, 247, 0.5)"
+                    strokeWidth="0.3"
+                  />
+                ))}
+                {/* Draw landmarks - same size as HandTracker (4px dots) */}
+                {hintLandmarks.map((lm, i) => (
+                  <circle
+                    key={i}
+                    cx={(1 - lm[0]) * 100}
+                    cy={lm[1] * 100}
+                    r="0.6"
+                    fill="#c084fc"
+                  />
+                ))}
+              </svg>
             )}
           </div>
 
