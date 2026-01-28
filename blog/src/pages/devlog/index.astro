@@ -1,0 +1,215 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import Header from '../../components/Header.astro';
+import FormattedDate from '../../components/FormattedDate.astro';
+import { SITE_TITLE } from '../../consts';
+
+const entries = (await getCollection('devlog')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+
+// Group entries by month/year
+const grouped = entries.reduce((acc, entry) => {
+	const date = entry.data.pubDate;
+	const key = `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`;
+	if (!acc[key]) acc[key] = [];
+	acc[key].push(entry);
+	return acc;
+}, {} as Record<string, typeof entries>);
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={`Dev Log | ${SITE_TITLE}`} description="Day-by-day development updates on SignLingo" />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<div class="page-header">
+				<h1>Dev Log</h1>
+				<p>Daily updates on building SignLingo. Raw, unfiltered progress.</p>
+			</div>
+
+			{entries.length === 0 ? (
+				<div class="empty-state">
+					<p>No entries yet. Check back soon!</p>
+				</div>
+			) : (
+				<div class="timeline">
+					{Object.entries(grouped).map(([month, monthEntries]) => (
+						<div class="month-group">
+							<h2 class="month-label">{month}</h2>
+							<div class="entries">
+								{monthEntries.map((entry) => (
+									<a href={`/devlog/${entry.id}/`} class="entry">
+										<div class="entry-date">
+											<span class="day">{entry.data.pubDate.getDate()}</span>
+											<span class="weekday">{entry.data.pubDate.toLocaleString('default', { weekday: 'short' })}</span>
+										</div>
+										<div class="entry-content">
+											<h3>{entry.data.title}</h3>
+											{entry.data.tags && (
+												<div class="tags">
+													{entry.data.tags.map((tag) => (
+														<span class="tag">{tag}</span>
+													))}
+												</div>
+											)}
+										</div>
+									</a>
+								))}
+							</div>
+						</div>
+					))}
+				</div>
+			)}
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	main {
+		max-width: 800px;
+		margin: 0 auto;
+		padding: 2em 1.5em 4em;
+	}
+
+	.page-header {
+		margin-bottom: 3em;
+	}
+
+	.page-header h1 {
+		margin: 0 0 0.25em;
+		color: rgb(var(--gray-dark));
+	}
+
+	.page-header p {
+		color: rgb(var(--gray));
+		font-size: 1.1em;
+		margin: 0;
+	}
+
+	.empty-state {
+		text-align: center;
+		padding: 4em 2em;
+		background: #f8f9fa;
+		border-radius: 12px;
+		color: rgb(var(--gray));
+	}
+
+	.timeline {
+		display: flex;
+		flex-direction: column;
+		gap: 2.5em;
+	}
+
+	.month-group {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75em;
+	}
+
+	.month-label {
+		font-size: 0.85em;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: rgb(var(--gray));
+		margin: 0;
+		padding-left: 0.5em;
+	}
+
+	.entries {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5em;
+	}
+
+	.entry {
+		display: flex;
+		align-items: flex-start;
+		gap: 1.25em;
+		padding: 1.25em;
+		background: white;
+		border-radius: 12px;
+		text-decoration: none;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+		transition: transform 0.2s, box-shadow 0.2s;
+	}
+
+	.entry:hover {
+		transform: translateX(4px);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+	}
+
+	.entry-date {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		min-width: 50px;
+		padding: 0.5em;
+		background: var(--cream);
+		border-radius: 8px;
+	}
+
+	.day {
+		font-size: 1.5em;
+		font-weight: 700;
+		color: rgb(var(--gray-dark));
+		line-height: 1;
+	}
+
+	.weekday {
+		font-size: 0.75em;
+		color: rgb(var(--gray));
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+
+	.entry-content {
+		flex: 1;
+	}
+
+	.entry-content h3 {
+		margin: 0 0 0.5em;
+		color: rgb(var(--gray-dark));
+		font-size: 1.1em;
+	}
+
+	.tags {
+		display: flex;
+		gap: 0.5em;
+		flex-wrap: wrap;
+	}
+
+	.tag {
+		font-size: 0.75em;
+		padding: 0.25em 0.75em;
+		background: rgba(91, 164, 164, 0.1);
+		color: var(--accent);
+		border-radius: 100px;
+		font-weight: 500;
+	}
+
+	@media (max-width: 720px) {
+		main {
+			padding: 1.5em 1em 3em;
+		}
+
+		.entry {
+			padding: 1em;
+		}
+
+		.entry-date {
+			min-width: 45px;
+		}
+
+		.day {
+			font-size: 1.25em;
+		}
+	}
+</style>

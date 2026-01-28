@@ -1,46 +1,228 @@
 ---
-import Layout from '../layouts/BlogPost.astro';
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import Logo from '../components/Logo.astro';
+import { SITE_TITLE } from '../consts';
 ---
 
-<Layout
-	title="About SignLingo"
-	description="Learn ASL fingerspelling with real-time feedback"
-	pubDate={new Date('January 28 2025')}
->
-	<p>
-		SignLingo is an open-source desktop application that teaches American Sign Language (ASL)
-		fingerspelling through interactive, gamified lessons. Think Duolingo, but for hand signs.
-	</p>
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={`About | ${SITE_TITLE}`} description="Learn about SignLingo - the ASL fingerspelling learning app" />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<div class="about-header">
+				<Logo size={64} />
+				<h1>About SignLingo</h1>
+			</div>
 
-	<h2>How It Works</h2>
-	<p>
-		Using your webcam, SignLingo detects your hand position in real-time using MediaPipe's
-		hand landmark detection. A lightweight TensorFlow.js model (just ~115KB) runs entirely
-		in your browser to recognize which letter you're signing.
-	</p>
+			<section class="intro">
+				<p class="lead">
+					SignLingo is an open-source desktop app that teaches American Sign Language (ASL) fingerspelling
+					through interactive, gamified lessons. Think Duolingo, but for hand signs.
+				</p>
+			</section>
 
-	<p>
-		The app guides you through progressive lessons, starting with simple letters and building
-		up to full words and phrases. You get instant feedback on your signing accuracy.
-	</p>
+			<section>
+				<h2>The Problem</h2>
+				<p>
+					Learning ASL fingerspelling typically requires either expensive in-person classes,
+					watching static videos with no feedback, or apps that only quiz you on <em>recognizing</em>
+					letters — not <em>producing</em> them.
+				</p>
+				<p>
+					SignLingo flips the script: it uses your webcam and machine learning to give you
+					real-time feedback as you practice signing.
+				</p>
+			</section>
 
-	<h2>Privacy First</h2>
-	<p>
-		All processing happens locally on your device. Your webcam feed never leaves your computer.
-		No accounts, no cloud, no tracking.
-	</p>
+			<section>
+				<h2>How It Works</h2>
+				<div class="how-it-works">
+					<div class="step">
+						<div class="step-number">1</div>
+						<div class="step-content">
+							<h3>Hand Detection</h3>
+							<p>MediaPipe detects 21 hand landmarks from your webcam feed in real-time.</p>
+						</div>
+					</div>
+					<div class="step">
+						<div class="step-number">2</div>
+						<div class="step-content">
+							<h3>ML Classification</h3>
+							<p>A lightweight TensorFlow.js model (~115KB) recognizes which letter you're signing.</p>
+						</div>
+					</div>
+					<div class="step">
+						<div class="step-number">3</div>
+						<div class="step-content">
+							<h3>Instant Feedback</h3>
+							<p>The app tells you immediately if you got it right, helping you learn faster.</p>
+						</div>
+					</div>
+				</div>
+			</section>
 
-	<h2>Open Source</h2>
-	<p>
-		SignLingo is fully open source. Check out the code on
-		<a href="https://github.com/ethanfalik/hand-sign">GitHub</a>.
-	</p>
+			<section>
+				<h2>Privacy First</h2>
+				<p>
+					All processing happens locally on your device. Your webcam feed never leaves your computer.
+					No accounts, no cloud, no tracking. The ML model runs entirely in your browser.
+				</p>
+			</section>
 
-	<h2>Tech Stack</h2>
-	<ul>
-		<li>Electron + React + TypeScript</li>
-		<li>MediaPipe Hands for landmark detection</li>
-		<li>TensorFlow.js for in-browser ML</li>
-		<li>Vite for development</li>
-	</ul>
-</Layout>
+			<section>
+				<h2>Tech Stack</h2>
+				<ul class="tech-list">
+					<li><strong>Electron</strong> — Cross-platform desktop app</li>
+					<li><strong>React + TypeScript</strong> — UI framework</li>
+					<li><strong>MediaPipe Hands</strong> — Hand landmark detection</li>
+					<li><strong>TensorFlow.js</strong> — In-browser ML training & inference</li>
+					<li><strong>Vite</strong> — Fast development bundler</li>
+					<li><strong>TailwindCSS</strong> — Styling</li>
+				</ul>
+			</section>
+
+			<section>
+				<h2>Open Source</h2>
+				<p>
+					SignLingo is fully open source under the MIT license. Contributions welcome!
+				</p>
+				<a href="https://github.com/ethanfalik/hand-sign" class="github-link">
+					<svg viewBox="0 0 16 16" width="20" height="20">
+						<path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+					</svg>
+					View on GitHub
+				</a>
+			</section>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	main {
+		max-width: 720px;
+	}
+
+	.about-header {
+		display: flex;
+		align-items: center;
+		gap: 1em;
+		margin-bottom: 2em;
+	}
+
+	.about-header h1 {
+		margin: 0;
+	}
+
+	.intro {
+		margin-bottom: 3em;
+	}
+
+	.lead {
+		font-size: 1.25em;
+		color: rgb(var(--gray));
+		line-height: 1.6;
+	}
+
+	section {
+		margin-bottom: 3em;
+	}
+
+	section h2 {
+		color: rgb(var(--gray-dark));
+		margin-bottom: 1em;
+		padding-bottom: 0.5em;
+		border-bottom: 2px solid var(--accent);
+		display: inline-block;
+	}
+
+	.how-it-works {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5em;
+	}
+
+	.step {
+		display: flex;
+		gap: 1.25em;
+		align-items: flex-start;
+	}
+
+	.step-number {
+		width: 40px;
+		height: 40px;
+		background: var(--accent);
+		color: white;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 700;
+		font-size: 1.1em;
+		flex-shrink: 0;
+	}
+
+	.step-content h3 {
+		margin: 0 0 0.25em;
+		font-size: 1.1em;
+		color: rgb(var(--gray-dark));
+	}
+
+	.step-content p {
+		margin: 0;
+		color: rgb(var(--gray));
+	}
+
+	.tech-list {
+		list-style: none;
+		padding: 0;
+	}
+
+	.tech-list li {
+		padding: 0.75em 0;
+		border-bottom: 1px solid rgba(var(--gray), 0.1);
+	}
+
+	.tech-list li:last-child {
+		border-bottom: none;
+	}
+
+	.tech-list strong {
+		color: rgb(var(--gray-dark));
+	}
+
+	.github-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5em;
+		padding: 0.875em 1.5em;
+		background: rgb(var(--gray-dark));
+		color: white;
+		border-radius: 10px;
+		font-weight: 600;
+		text-decoration: none;
+		transition: transform 0.2s, box-shadow 0.2s;
+	}
+
+	.github-link:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+		text-decoration: none;
+	}
+
+	@media (max-width: 720px) {
+		.about-header {
+			flex-direction: column;
+			text-align: center;
+		}
+
+		.lead {
+			font-size: 1.1em;
+		}
+	}
+</style>

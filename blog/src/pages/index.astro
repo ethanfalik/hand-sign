@@ -1,8 +1,19 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+import Logo from '../components/Logo.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+
+const posts = (await getCollection('blog')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+).slice(0, 3);
+
+const devlogs = (await getCollection('devlog')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+).slice(0, 5);
 ---
 
 <!doctype html>
@@ -13,37 +24,362 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 	<body>
 		<Header />
 		<main>
-			<h1>🧑‍🚀 Hello, Astronaut!</h1>
-			<p>
-				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This template
-				serves as a lightweight, minimally-styled starting point for anyone looking to build a personal
-				website, blog, or portfolio with Astro.
-			</p>
-			<p>
-				This template comes with a few integrations already configured in your
-				<code>astro.config.mjs</code> file. You can customize your setup with
-				<a href="https://astro.build/integrations">Astro Integrations</a> to add tools like Tailwind,
-				React, or Vue to your project.
-			</p>
-			<p>Here are a few ideas on how to get started with the template:</p>
-			<ul>
-				<li>Edit this page in <code>src/pages/index.astro</code></li>
-				<li>Edit the site header items in <code>src/components/Header.astro</code></li>
-				<li>Add your name to the footer in <code>src/components/Footer.astro</code></li>
-				<li>Check out the included blog posts in <code>src/content/blog/</code></li>
-				<li>Customize the blog post page layout in <code>src/layouts/BlogPost.astro</code></li>
-			</ul>
-			<p>
-				Have fun! If you get stuck, remember to
-				<a href="https://docs.astro.build/">read the docs</a>
-				or <a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-			</p>
-			<p>
-				Looking for a blog template with a bit more personality? Check out
-				<a href="https://github.com/Charca/astro-blog-template">astro-blog-template</a>
-				by <a href="https://twitter.com/Charca">Maxi Ferreira</a>.
-			</p>
+			<!-- Hero Section -->
+			<section class="hero">
+				<div class="hero-content">
+					<Logo size={80} />
+					<h1>SignLingo</h1>
+					<p class="tagline">Learn ASL fingerspelling like you'd learn a language on Duolingo — with real-time feedback from your webcam.</p>
+					<div class="hero-buttons">
+						<a href="https://github.com/ethanfalik/hand-sign" class="btn btn-primary">
+							<svg viewBox="0 0 16 16" width="20" height="20">
+								<path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+							</svg>
+							View on GitHub
+						</a>
+						<a href="/about" class="btn btn-secondary">Learn More</a>
+					</div>
+				</div>
+			</section>
+
+			<!-- Features Section -->
+			<section class="features">
+				<h2>How It Works</h2>
+				<div class="feature-grid">
+					<div class="feature-card">
+						<div class="feature-icon">📷</div>
+						<h3>Webcam Detection</h3>
+						<p>MediaPipe detects 21 hand landmarks in real-time, tracking your finger positions with precision.</p>
+					</div>
+					<div class="feature-card">
+						<div class="feature-icon">🧠</div>
+						<h3>In-Browser ML</h3>
+						<p>A lightweight TensorFlow.js model (~115KB) runs entirely in your browser. No server, no cloud.</p>
+					</div>
+					<div class="feature-card">
+						<div class="feature-icon">🎮</div>
+						<h3>Gamified Learning</h3>
+						<p>Progressive lessons with instant feedback. Start with simple letters, work up to full words.</p>
+					</div>
+					<div class="feature-card">
+						<div class="feature-icon">🔒</div>
+						<h3>Privacy First</h3>
+						<p>Your camera feed never leaves your device. All processing happens locally.</p>
+					</div>
+				</div>
+			</section>
+
+			<!-- Dev Log Section -->
+			<section class="devlog-section">
+				<div class="section-header">
+					<h2>Dev Log</h2>
+					<a href="/devlog" class="see-all">View all entries →</a>
+				</div>
+				<div class="devlog-list">
+					{devlogs.length > 0 ? (
+						devlogs.map((entry) => (
+							<a href={`/devlog/${entry.id}/`} class="devlog-entry">
+								<span class="devlog-date"><FormattedDate date={entry.data.pubDate} /></span>
+								<span class="devlog-title">{entry.data.title}</span>
+							</a>
+						))
+					) : (
+						<p class="empty-state">No dev log entries yet. Check back soon!</p>
+					)}
+				</div>
+			</section>
+
+			<!-- Blog Section -->
+			<section class="blog-section">
+				<div class="section-header">
+					<h2>Latest Posts</h2>
+					<a href="/blog" class="see-all">View all posts →</a>
+				</div>
+				<div class="blog-grid">
+					{posts.map((post) => (
+						<a href={`/blog/${post.id}/`} class="blog-card">
+							<h3>{post.data.title}</h3>
+							<p class="blog-description">{post.data.description}</p>
+							<span class="blog-date"><FormattedDate date={post.data.pubDate} /></span>
+						</a>
+					))}
+				</div>
+			</section>
 		</main>
 		<Footer />
 	</body>
 </html>
+
+<style>
+	main {
+		width: 100%;
+		max-width: 100%;
+		padding: 0;
+	}
+
+	/* Hero */
+	.hero {
+		background: linear-gradient(135deg, var(--cream) 0%, #e8f0e5 100%);
+		padding: 5em 1.5em;
+		text-align: center;
+	}
+
+	.hero-content {
+		max-width: 700px;
+		margin: 0 auto;
+	}
+
+	.hero h1 {
+		font-size: 3.5em;
+		margin: 0.25em 0 0.15em;
+		color: rgb(var(--gray-dark));
+		letter-spacing: -0.03em;
+	}
+
+	.tagline {
+		font-size: 1.25em;
+		color: rgb(var(--gray));
+		margin-bottom: 2em;
+		line-height: 1.5;
+	}
+
+	.hero-buttons {
+		display: flex;
+		gap: 1em;
+		justify-content: center;
+		flex-wrap: wrap;
+	}
+
+	.btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5em;
+		padding: 0.875em 1.5em;
+		border-radius: 10px;
+		font-weight: 600;
+		text-decoration: none;
+		transition: transform 0.2s, box-shadow 0.2s;
+	}
+
+	.btn:hover {
+		transform: translateY(-2px);
+	}
+
+	.btn-primary {
+		background: var(--accent);
+		color: white;
+		box-shadow: 0 4px 12px rgba(91, 164, 164, 0.3);
+	}
+
+	.btn-primary:hover {
+		box-shadow: 0 6px 20px rgba(91, 164, 164, 0.4);
+	}
+
+	.btn-secondary {
+		background: white;
+		color: rgb(var(--gray-dark));
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	}
+
+	/* Features */
+	.features {
+		padding: 4em 1.5em;
+		max-width: 1100px;
+		margin: 0 auto;
+	}
+
+	.features h2 {
+		text-align: center;
+		margin-bottom: 2em;
+		color: rgb(var(--gray-dark));
+	}
+
+	.feature-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+		gap: 1.5em;
+	}
+
+	.feature-card {
+		background: white;
+		padding: 2em;
+		border-radius: 16px;
+		box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+		transition: transform 0.2s, box-shadow 0.2s;
+	}
+
+	.feature-card:hover {
+		transform: translateY(-4px);
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+	}
+
+	.feature-icon {
+		font-size: 2.5em;
+		margin-bottom: 0.5em;
+	}
+
+	.feature-card h3 {
+		color: rgb(var(--gray-dark));
+		margin-bottom: 0.5em;
+		font-size: 1.2em;
+	}
+
+	.feature-card p {
+		color: rgb(var(--gray));
+		font-size: 0.95em;
+		line-height: 1.6;
+		margin: 0;
+	}
+
+	/* Section headers */
+	.section-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 1.5em;
+	}
+
+	.section-header h2 {
+		margin: 0;
+		color: rgb(var(--gray-dark));
+	}
+
+	.see-all {
+		color: var(--accent);
+		text-decoration: none;
+		font-weight: 500;
+	}
+
+	.see-all:hover {
+		text-decoration: underline;
+	}
+
+	/* Dev Log */
+	.devlog-section {
+		padding: 4em 1.5em;
+		background: #f8f9fa;
+		max-width: 100%;
+	}
+
+	.devlog-section > * {
+		max-width: 800px;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	.devlog-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5em;
+	}
+
+	.devlog-entry {
+		display: flex;
+		align-items: center;
+		gap: 1.5em;
+		padding: 1em 1.25em;
+		background: white;
+		border-radius: 10px;
+		text-decoration: none;
+		transition: transform 0.2s, box-shadow 0.2s;
+	}
+
+	.devlog-entry:hover {
+		transform: translateX(4px);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+	}
+
+	.devlog-date {
+		color: rgb(var(--gray));
+		font-size: 0.9em;
+		min-width: 100px;
+		font-family: monospace;
+	}
+
+	.devlog-title {
+		color: rgb(var(--gray-dark));
+		font-weight: 500;
+	}
+
+	.empty-state {
+		color: rgb(var(--gray));
+		text-align: center;
+		padding: 2em;
+	}
+
+	/* Blog */
+	.blog-section {
+		padding: 4em 1.5em;
+		max-width: 1100px;
+		margin: 0 auto;
+	}
+
+	.blog-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+		gap: 1.5em;
+	}
+
+	.blog-card {
+		background: white;
+		padding: 1.75em;
+		border-radius: 16px;
+		text-decoration: none;
+		box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+		transition: transform 0.2s, box-shadow 0.2s;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.blog-card:hover {
+		transform: translateY(-4px);
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+	}
+
+	.blog-card h3 {
+		color: rgb(var(--gray-dark));
+		margin: 0 0 0.5em;
+		font-size: 1.25em;
+	}
+
+	.blog-description {
+		color: rgb(var(--gray));
+		font-size: 0.95em;
+		line-height: 1.5;
+		flex: 1;
+	}
+
+	.blog-date {
+		color: rgb(var(--gray));
+		font-size: 0.85em;
+		margin-top: 1em;
+	}
+
+	@media (max-width: 720px) {
+		.hero {
+			padding: 3em 1em;
+		}
+
+		.hero h1 {
+			font-size: 2.5em;
+		}
+
+		.tagline {
+			font-size: 1.1em;
+		}
+
+		.features, .blog-section {
+			padding: 3em 1em;
+		}
+
+		.devlog-entry {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 0.25em;
+		}
+
+		.devlog-date {
+			min-width: auto;
+		}
+	}
+</style>

@@ -1,0 +1,247 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import Header from '../../components/Header.astro';
+import FormattedDate from '../../components/FormattedDate.astro';
+import { SITE_TITLE } from '../../consts';
+
+export async function getStaticPaths() {
+	const entries = await getCollection('devlog');
+	return entries.map((entry) => ({
+		params: { slug: entry.id },
+		props: entry,
+	}));
+}
+
+const entry = Astro.props;
+const { Content } = await render(entry);
+
+// Get prev/next entries
+const allEntries = (await getCollection('devlog')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+const currentIndex = allEntries.findIndex((e) => e.id === entry.id);
+const prevEntry = allEntries[currentIndex + 1];
+const nextEntry = allEntries[currentIndex - 1];
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={`${entry.data.title} | Dev Log | ${SITE_TITLE}`} description={entry.data.title} />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<article>
+				<header>
+					<a href="/devlog" class="back-link">← Back to Dev Log</a>
+					<div class="date-badge">
+						<FormattedDate date={entry.data.pubDate} />
+					</div>
+					<h1>{entry.data.title}</h1>
+					{entry.data.tags && (
+						<div class="tags">
+							{entry.data.tags.map((tag) => (
+								<span class="tag">{tag}</span>
+							))}
+						</div>
+					)}
+				</header>
+				<div class="content">
+					<Content />
+				</div>
+			</article>
+
+			<nav class="entry-nav">
+				{prevEntry ? (
+					<a href={`/devlog/${prevEntry.id}/`} class="nav-link prev">
+						<span class="nav-label">← Previous</span>
+						<span class="nav-title">{prevEntry.data.title}</span>
+					</a>
+				) : <div />}
+				{nextEntry ? (
+					<a href={`/devlog/${nextEntry.id}/`} class="nav-link next">
+						<span class="nav-label">Next →</span>
+						<span class="nav-title">{nextEntry.data.title}</span>
+					</a>
+				) : <div />}
+			</nav>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	main {
+		max-width: 720px;
+		margin: 0 auto;
+		padding: 2em 1.5em 4em;
+	}
+
+	article header {
+		margin-bottom: 2em;
+	}
+
+	.back-link {
+		display: inline-block;
+		color: rgb(var(--gray));
+		text-decoration: none;
+		font-size: 0.9em;
+		margin-bottom: 1.5em;
+		transition: color 0.2s;
+	}
+
+	.back-link:hover {
+		color: var(--accent);
+	}
+
+	.date-badge {
+		display: inline-block;
+		padding: 0.5em 1em;
+		background: var(--cream);
+		border-radius: 100px;
+		font-size: 0.9em;
+		color: rgb(var(--gray-dark));
+		font-weight: 500;
+		margin-bottom: 1em;
+	}
+
+	h1 {
+		margin: 0 0 0.5em;
+		color: rgb(var(--gray-dark));
+		font-size: 2.2em;
+		line-height: 1.2;
+	}
+
+	.tags {
+		display: flex;
+		gap: 0.5em;
+		flex-wrap: wrap;
+	}
+
+	.tag {
+		font-size: 0.8em;
+		padding: 0.35em 0.9em;
+		background: rgba(91, 164, 164, 0.1);
+		color: var(--accent);
+		border-radius: 100px;
+		font-weight: 500;
+	}
+
+	.content {
+		color: rgb(var(--gray-dark));
+		line-height: 1.8;
+	}
+
+	.content :global(h2) {
+		margin-top: 2em;
+		margin-bottom: 0.75em;
+		color: rgb(var(--gray-dark));
+	}
+
+	.content :global(h3) {
+		margin-top: 1.5em;
+		margin-bottom: 0.5em;
+	}
+
+	.content :global(ul), .content :global(ol) {
+		padding-left: 1.5em;
+	}
+
+	.content :global(li) {
+		margin-bottom: 0.5em;
+	}
+
+	.content :global(code) {
+		background: rgba(var(--gray), 0.1);
+		padding: 0.2em 0.4em;
+		border-radius: 4px;
+		font-size: 0.9em;
+	}
+
+	.content :global(pre) {
+		background: rgb(var(--gray-dark));
+		color: white;
+		padding: 1.25em;
+		border-radius: 8px;
+		overflow-x: auto;
+	}
+
+	.content :global(pre code) {
+		background: none;
+		padding: 0;
+	}
+
+	.content :global(blockquote) {
+		border-left: 4px solid var(--accent);
+		margin: 1.5em 0;
+		padding: 0.5em 0 0.5em 1.5em;
+		color: rgb(var(--gray));
+		font-style: italic;
+	}
+
+	/* Navigation */
+	.entry-nav {
+		display: flex;
+		justify-content: space-between;
+		gap: 1em;
+		margin-top: 4em;
+		padding-top: 2em;
+		border-top: 1px solid rgba(var(--gray), 0.2);
+	}
+
+	.nav-link {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25em;
+		padding: 1em;
+		background: #f8f9fa;
+		border-radius: 10px;
+		text-decoration: none;
+		max-width: 45%;
+		transition: background 0.2s;
+	}
+
+	.nav-link:hover {
+		background: var(--cream);
+	}
+
+	.nav-link.next {
+		text-align: right;
+		margin-left: auto;
+	}
+
+	.nav-label {
+		font-size: 0.85em;
+		color: rgb(var(--gray));
+	}
+
+	.nav-title {
+		color: rgb(var(--gray-dark));
+		font-weight: 500;
+	}
+
+	@media (max-width: 720px) {
+		main {
+			padding: 1.5em 1em 3em;
+		}
+
+		h1 {
+			font-size: 1.75em;
+		}
+
+		.entry-nav {
+			flex-direction: column;
+		}
+
+		.nav-link {
+			max-width: 100%;
+		}
+
+		.nav-link.next {
+			text-align: left;
+		}
+	}
+</style>
