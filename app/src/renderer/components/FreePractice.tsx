@@ -14,6 +14,7 @@ import {
   Sample,
   getTrainedLetters,
 } from '../lib/model'
+import { ASL_DESCRIPTIONS, FINGER_STATES } from '../lib/aslDescriptions'
 
 interface Props {
   model: tf.LayersModel
@@ -312,14 +313,49 @@ export function FreePractice({ model, onBack }: Props) {
               onHandLost={handleHandLost}
             />
 
-            {/* Hint overlay */}
+            {/* Hint overlay - improved visualization */}
             {showHint && hintLandmarks && (
               <svg
                 className="absolute inset-0 w-full h-full pointer-events-none"
                 viewBox="0 0 1 1"
                 preserveAspectRatio="none"
               >
-                {/* Draw connections */}
+                {/* Semi-transparent hand fill */}
+                <path
+                  d={`M ${1 - hintLandmarks[0][0]} ${hintLandmarks[0][1]}
+                      L ${1 - hintLandmarks[1][0]} ${hintLandmarks[1][1]}
+                      L ${1 - hintLandmarks[2][0]} ${hintLandmarks[2][1]}
+                      L ${1 - hintLandmarks[3][0]} ${hintLandmarks[3][1]}
+                      L ${1 - hintLandmarks[4][0]} ${hintLandmarks[4][1]}
+                      L ${1 - hintLandmarks[3][0]} ${hintLandmarks[3][1]}
+                      L ${1 - hintLandmarks[2][0]} ${hintLandmarks[2][1]}
+                      L ${1 - hintLandmarks[5][0]} ${hintLandmarks[5][1]}
+                      L ${1 - hintLandmarks[6][0]} ${hintLandmarks[6][1]}
+                      L ${1 - hintLandmarks[7][0]} ${hintLandmarks[7][1]}
+                      L ${1 - hintLandmarks[8][0]} ${hintLandmarks[8][1]}
+                      L ${1 - hintLandmarks[7][0]} ${hintLandmarks[7][1]}
+                      L ${1 - hintLandmarks[6][0]} ${hintLandmarks[6][1]}
+                      L ${1 - hintLandmarks[9][0]} ${hintLandmarks[9][1]}
+                      L ${1 - hintLandmarks[10][0]} ${hintLandmarks[10][1]}
+                      L ${1 - hintLandmarks[11][0]} ${hintLandmarks[11][1]}
+                      L ${1 - hintLandmarks[12][0]} ${hintLandmarks[12][1]}
+                      L ${1 - hintLandmarks[11][0]} ${hintLandmarks[11][1]}
+                      L ${1 - hintLandmarks[10][0]} ${hintLandmarks[10][1]}
+                      L ${1 - hintLandmarks[13][0]} ${hintLandmarks[13][1]}
+                      L ${1 - hintLandmarks[14][0]} ${hintLandmarks[14][1]}
+                      L ${1 - hintLandmarks[15][0]} ${hintLandmarks[15][1]}
+                      L ${1 - hintLandmarks[16][0]} ${hintLandmarks[16][1]}
+                      L ${1 - hintLandmarks[15][0]} ${hintLandmarks[15][1]}
+                      L ${1 - hintLandmarks[14][0]} ${hintLandmarks[14][1]}
+                      L ${1 - hintLandmarks[17][0]} ${hintLandmarks[17][1]}
+                      L ${1 - hintLandmarks[18][0]} ${hintLandmarks[18][1]}
+                      L ${1 - hintLandmarks[19][0]} ${hintLandmarks[19][1]}
+                      L ${1 - hintLandmarks[20][0]} ${hintLandmarks[20][1]}
+                      Z`}
+                  fill="rgba(168, 85, 247, 0.15)"
+                  stroke="none"
+                />
+                {/* Draw thicker, more visible connections */}
                 {[
                   [0, 1], [1, 2], [2, 3], [3, 4], // Thumb
                   [0, 5], [5, 6], [6, 7], [7, 8], // Index
@@ -334,20 +370,48 @@ export function FreePractice({ model, onBack }: Props) {
                     y1={hintLandmarks[a][1]}
                     x2={1 - hintLandmarks[b][0]}
                     y2={hintLandmarks[b][1]}
-                    stroke="rgba(168, 85, 247, 0.6)"
-                    strokeWidth="0.008"
+                    stroke="rgba(168, 85, 247, 0.8)"
+                    strokeWidth="0.012"
+                    strokeLinecap="round"
                   />
                 ))}
-                {/* Draw landmarks */}
-                {hintLandmarks.map((lm, i) => (
-                  <circle
-                    key={i}
-                    cx={1 - lm[0]}
-                    cy={lm[1]}
-                    r="0.012"
-                    fill="rgba(168, 85, 247, 0.8)"
-                  />
+                {/* Fingertip highlights with labels */}
+                {[
+                  { idx: 4, label: 'Thumb', color: '#f59e0b' },
+                  { idx: 8, label: 'Index', color: '#10b981' },
+                  { idx: 12, label: 'Middle', color: '#3b82f6' },
+                  { idx: 16, label: 'Ring', color: '#8b5cf6' },
+                  { idx: 20, label: 'Pinky', color: '#ec4899' },
+                ].map(({ idx, label, color }) => (
+                  <g key={idx}>
+                    <circle
+                      cx={1 - hintLandmarks[idx][0]}
+                      cy={hintLandmarks[idx][1]}
+                      r="0.025"
+                      fill={color}
+                      opacity="0.9"
+                    />
+                    <text
+                      x={1 - hintLandmarks[idx][0]}
+                      y={hintLandmarks[idx][1] - 0.04}
+                      fontSize="0.035"
+                      fill="white"
+                      textAnchor="middle"
+                      fontWeight="bold"
+                      style={{ textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}
+                    >
+                      {label}
+                    </text>
+                  </g>
                 ))}
+                {/* Wrist marker */}
+                <circle
+                  cx={1 - hintLandmarks[0][0]}
+                  cy={hintLandmarks[0][1]}
+                  r="0.02"
+                  fill="white"
+                  opacity="0.8"
+                />
               </svg>
             )}
           </div>
@@ -490,23 +554,86 @@ export function FreePractice({ model, onBack }: Props) {
             </div>
           </div>
 
-          {/* Selected letter info */}
+          {/* Selected letter info with ASL description */}
           {selectedLetter && (
             <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-2xl font-bold text-white">{selectedLetter}</span>
-                {isDynamic && (
-                  <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-1 rounded">
-                    Dynamic ↺
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-3xl font-bold text-white">{selectedLetter}</span>
+                <div className="flex flex-col items-end gap-1">
+                  {isDynamic && (
+                    <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-1 rounded">
+                      Dynamic ↺
+                    </span>
+                  )}
+                  <span className="text-xs text-gray-500">
+                    {getSampleCount(selectedLetter)} {isDynamic ? 'recordings' : 'samples'}
                   </span>
-                )}
+                </div>
               </div>
-              <div className="text-sm text-gray-500">
-                {getSampleCount(selectedLetter)} {isDynamic ? 'recordings' : 'samples'}
-              </div>
+
+              {/* ASL Description */}
+              {ASL_DESCRIPTIONS[selectedLetter] && (
+                <div className="space-y-3">
+                  {/* Main description */}
+                  <div className="bg-gray-800/50 rounded-lg p-3">
+                    <div className="text-sm font-medium text-white mb-1">
+                      {ASL_DESCRIPTIONS[selectedLetter].description}
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      {ASL_DESCRIPTIONS[selectedLetter].fingers}
+                    </div>
+                  </div>
+
+                  {/* Tips */}
+                  <div>
+                    <div className="text-xs font-medium text-gray-500 mb-2">How to sign:</div>
+                    <ul className="space-y-1.5">
+                      {ASL_DESCRIPTIONS[selectedLetter].tips.map((tip, i) => (
+                        <li key={i} className="flex items-start gap-2 text-xs">
+                          <span className="text-mint-400 mt-0.5">
+                            {i + 1}.
+                          </span>
+                          <span className="text-gray-300">{tip}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Finger states visual */}
+                  {FINGER_STATES[selectedLetter] && (
+                    <div className="flex gap-1.5 pt-2 border-t border-gray-800">
+                      {Object.entries(FINGER_STATES[selectedLetter]).map(([finger, state]) => (
+                        <div
+                          key={finger}
+                          className={`flex-1 text-center py-1.5 rounded text-xs font-medium ${
+                            state === 'extended' ? 'bg-mint-500/20 text-mint-400' :
+                            state === 'closed' ? 'bg-gray-800 text-gray-500' :
+                            state === 'bent' ? 'bg-yellow-500/20 text-yellow-400' :
+                            state === 'touching' ? 'bg-blue-500/20 text-blue-400' :
+                            state === 'crossed' ? 'bg-purple-500/20 text-purple-400' :
+                            'bg-orange-500/20 text-orange-400'
+                          }`}
+                          title={`${finger}: ${state}`}
+                        >
+                          <div className="text-[10px] opacity-70 capitalize">{finger.slice(0, 3)}</div>
+                          <div className={`text-sm ${state === 'extended' ? '' : 'opacity-50'}`}>
+                            {state === 'extended' ? '☝️' :
+                             state === 'closed' ? '✊' :
+                             state === 'bent' ? '🪝' :
+                             state === 'touching' ? '👌' :
+                             state === 'crossed' ? '🤞' :
+                             '👆'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {getSampleCount(selectedLetter) === 0 && (
-                <p className="text-xs text-red-400 mt-2">
-                  No samples recorded. Go to Record tab first.
+                <p className="text-xs text-red-400 mt-3 bg-red-500/10 rounded-lg p-2">
+                  ⚠️ No samples recorded for this letter. Go to Record tab first.
                 </p>
               )}
             </div>
@@ -534,10 +661,23 @@ export function FreePractice({ model, onBack }: Props) {
           </div>
 
           {/* Tips */}
-          <div className="text-xs text-gray-600 px-1">
-            {isDynamic
-              ? 'Line up with the hint, then complete the motion'
-              : 'Match your hand to the purple hint overlay'}
+          <div className="bg-gray-800/50 rounded-lg p-3 text-xs text-gray-400">
+            <div className="font-medium text-gray-300 mb-1">
+              {isDynamic ? '💫 Dynamic gesture tips:' : '✋ Practice tips:'}
+            </div>
+            {isDynamic ? (
+              <ul className="space-y-1">
+                <li>• Position your hand at the start pose (purple overlay)</li>
+                <li>• When matched, perform the motion smoothly</li>
+                <li>• End at the finish position shown</li>
+              </ul>
+            ) : (
+              <ul className="space-y-1">
+                <li>• Click "Show Hint" to see the target hand position</li>
+                <li>• Match your hand shape to the purple overlay</li>
+                <li>• Hold steady for 1 second when correct</li>
+              </ul>
+            )}
           </div>
         </div>
       </div>
